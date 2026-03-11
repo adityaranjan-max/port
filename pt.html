@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Editor Portfolio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital@1&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --accent: #e8c84a;
+            --accent2: #ff4d4d;
+            --text: #f0ede8;
+            --muted: #666;
+            --border: rgba(255, 255, 255, 0.07);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor-ring {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(232, 200, 74, 0.5);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        body:hover .cursor {
+            opacity: 1;
+        }
+
+        /* Noise overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.4;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10, 10, 10, 0.9), transparent);
+            backdrop-filter: blur(4px);
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 4px;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 0 60px;
+            position: relative;
+            overflow: hidden;
+            align-items: center;
+        }
+
+        .hero-bg-reel {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 70% 50%, rgba(232, 200, 74, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 20% 80%, rgba(255, 77, 77, 0.05) 0%, transparent 60%);
+        }
+
+        .hero-left {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 28px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.2s forwards;
+        }
+
+        .hero-label::before {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(72px, 9vw, 130px);
+            line-height: 0.9;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.4s forwards;
+        }
+
+        .hero-title .line2 {
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(240, 237, 232, 0.3);
+            display: block;
+        }
+
+        .hero-title .accent-word {
+            color: var(--accent);
+        }
+
+        .hero-sub {
+            margin-top: 28px;
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 360px;
+            font-weight: 300;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.6s forwards;
+        }
+
+        .hero-cta {
+            margin-top: 44px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.8s forwards;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            padding: 14px 36px;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+            border: none;
+            cursor: none;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(232, 200, 74, 0.35);
+        }
+
+        .btn-ghost {
+            color: var(--text);
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: gap 0.3s;
+        }
+
+        .btn-ghost:hover {
+            gap: 14px;
+        }
+
+        .btn-ghost::after {
+            content: '→';
+            color: var(--accent);
+        }
+
+        /* Reel visual right side */
+        .hero-right {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 1.2s 0.6s forwards;
+        }
+
+        .reel-frame {
+            width: 380px;
+            height: 520px;
+            position: relative;
+        }
+
+        .reel-main {
+            width: 100%;
+            height: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+        }
+
+        .reel-main::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(232, 200, 74, 0.08) 0%, transparent 50%, rgba(255, 77, 77, 0.05) 100%);
+        }
+
+        .reel-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 72px;
+            height: 72px;
+            border: 1px solid rgba(232, 200, 74, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 20px;
+            cursor: none;
+            transition: all 0.3s;
+        }
+
+        .reel-play:hover {
+            background: var(--accent);
+            color: #000;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .reel-label {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .reel-badge {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 90px;
+            height: 90px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            animation: spin 12s linear infinite;
+        }
+
+        .reel-badge svg text {
+            fill: var(--muted);
+            font-size: 9px;
+            letter-spacing: 2.5px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .reel-badge-center {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        .reel-stats {
+            position: absolute;
+            left: -60px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: rgba(17, 17, 17, 0.95);
+            border: 1px solid var(--border);
+            padding: 14px 18px;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .stat-desc {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Film strip decoration */
+        .film-strip {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .film-hole {
+            width: 20px;
+            height: 14px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            background: rgba(232, 200, 74, 0.04);
+        }
+
+        /* MARQUEE */
+        .marquee-section {
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 60px;
+            animation: marquee 20s linear infinite;
+            width: max-content;
+        }
+
+        .marquee-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .marquee-item span {
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        /* ABOUT */
+        .section {
+            padding: 120px 60px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            margin-top: 48px;
+        }
+
+        .about-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(42px, 5vw, 70px);
+            line-height: 0.95;
+            letter-spacing: 1px;
+        }
+
+        .about-title em {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: var(--accent);
+            font-size: 0.85em;
+        }
+
+        .about-body {
+            color: #888;
+            line-height: 1.9;
+            font-size: 15px;
+            font-weight: 300;
+            margin-top: 24px;
+        }
+
+        .about-body p+p {
+            margin-top: 16px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .tool-item {
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: var(--accent);
+            transition: width 0.3s;
+            opacity: 0.15;
+        }
+
+        .tool-item:hover {
+            color: var(--text);
+            border-color: rgba(232, 200, 74, 0.3);
+        }
+
+        .tool-item:hover::before {
+            width: 100%;
+        }
+
+        /* WORK / PROJECTS */
+        .work-section {
+            padding: 120px 60px;
+        }
+
+        .work-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 60px;
+        }
+
+        .work-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(52px, 6vw, 88px);
+            line-height: 0.9;
+            letter-spacing: 2px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+
+        .project-card {
+            position: relative;
+            aspect-ratio: 16/10;
+            background: var(--surface);
+            overflow: hidden;
+            cursor: none;
+            group: true;
+        }
+
+        .project-card:first-child {
+            grid-column: span 2;
+            aspect-ratio: 16/7;
+        }
+
+        .project-inner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            padding: 32px;
+        }
+
+        .project-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.5s;
+            filter: brightness(0.4) saturate(0.6);
+        }
+
+        .project-card:hover .project-bg {
+            transform: scale(1.06);
+            filter: brightness(0.55) saturate(0.9);
+        }
+
+        /* Gradient overlays for cards */
+        .grad-1 {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+
+        .grad-2 {
+            background: linear-gradient(135deg, #2d1b1b 0%, #4a1515 100%);
+        }
+
+        .grad-3 {
+            background: linear-gradient(135deg, #1b2d1b 0%, #152415 100%);
+        }
+
+        .grad-4 {
+            background: linear-gradient(135deg, #1e1b2d 0%, #0d0d2e 100%);
+        }
+
+        .project-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 60%);
+        }
+
+        .project-info {
+            position: relative;
+            z-index: 2;
+        }
+
+        .project-cat {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .project-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(24px, 3vw, 40px);
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .project-arrow {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            z-index: 2;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+
+        .project-card:hover .project-arrow {
+            opacity: 1;
+            transform: translateY(0);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* SKILLS */
+        .skills-section {
+            padding: 120px 60px;
+            background: var(--surface);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .skill-block {}
+
+        .skill-name {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .skill-name span {
+            color: var(--accent);
+        }
+
+        .skill-bar {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .skill-fill.animated {
+            transform: scaleX(1);
+        }
+
+        /* CONTACT */
+        .contact-section {
+            padding: 120px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(232, 200, 74, 0.05) 0%, transparent 70%);
+        }
+
+        .contact-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(60px, 10vw, 160px);
+            line-height: 0.85;
+            letter-spacing: 4px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .contact-title .outline {
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(240, 237, 232, 0.15);
+        }
+
+        .contact-email {
+            display: inline-block;
+            margin-top: 40px;
+            font-size: clamp(18px, 2.5vw, 28px);
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+            border-bottom: 1px solid rgba(232, 200, 74, 0.3);
+            padding-bottom: 4px;
+            transition: border-color 0.3s;
+        }
+
+        .contact-email:hover {
+            border-color: var(--accent);
+        }
+
+        .social-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-top: 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .social-link {
+            width: 48px;
+            height: 48px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* FOOTER */
+        footer {
+            padding: 32px 60px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer p {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes marquee {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            nav {
+                padding: 20px 28px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 120px 28px 60px;
+            }
+
+            .hero-right {
+                display: none;
+            }
+
+            .section,
+            .work-section,
+            .skills-section,
+            .contact-section {
+                padding: 80px 28px;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-card:first-child {
+                grid-column: span 1;
+                aspect-ratio: 16/10;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .work-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            body {
+                cursor: auto;
+            }
+
+            .cursor,
+            .cursor-ring {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">ADITYA∙RAJAN</div>
+        <ul class="nav-links">
+            <li><a href="#work">Work</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-bg-reel"></div>
+        <div class="hero-left">
+            <div class="hero-label">Available for Projects</div>
+            <h1 class="hero-title">
+                VISUAL<br>
+                <span class="line2">STORY</span><br>
+                <span class="accent-word">TELLER</span>
+            </h1>
+            <p class="hero-sub">
+                Cinematic edits. Powerful narratives. I transform raw footage into emotional, frame-perfect stories that
+                move audiences.
+            </p>
+            <div class="hero-cta">
+                <a href="#work" class="btn-primary">View My Work</a>
+                <a href="#contact" class="btn-ghost">Hire Me</a>
+            </div>
+        </div>
+        <div class="hero-right">
+            <div class="reel-frame">
+                <div class="reel-main">
+                    <div
+                        style="position:absolute;inset:0;background:linear-gradient(135deg,#1a1a2e,#0f3460,#2d1b1b);opacity:0.8">
+                    </div>
+                    <div
+                        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
+                        <div style="width:60px;height:1px;background:rgba(232,200,74,0.3)"></div>
+                        <div style="width:100px;height:1px;background:rgba(232,200,74,0.15)"></div>
+                        <div
+                            style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:rgba(232,200,74,0.1);letter-spacing:8px">
+                            REEL</div>
+                        <div style="width:100px;height:1px;background:rgba(232,200,74,0.15)"></div>
+                        <div style="width:60px;height:1px;background:rgba(232,200,74,0.3)"></div>
+                    </div>
+                    <div class="reel-play">▶</div>
+                    <div class="reel-label">SHOWREEL 2024</div>
+                </div>
+
+                <div class="reel-badge">
+                    <svg viewBox="0 0 90 90" width="90" height="90">
+                        <defs>
+                            <path id="circle-path" d="M 45,45 m -28,0 a 28,28 0 1,1 56,0 a 28,28 0 1,1 -56,0" />
+                        </defs>
+                        <text>
+                            <textPath href="#circle-path">EDITOR • COLORIST • MOTION • </textPath>
+                        </text>
+                    </svg>
+                </div>
+                <div class="reel-badge-center">✦</div>
+
+                <div class="reel-stats">
+                    <div class="stat-card">
+                        <div class="stat-num">120+</div>
+                        <div class="stat-desc">Projects Done</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num">0year</div>
+                        <div class="stat-desc">Experience</div>
+                    </div>
+                </div>
+
+                <div class="film-strip">
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                    <div class="film-hole"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-section">
+        <div class="marquee-track" id="marqueeTrack">
+            <div class="marquee-item"><span>✦</span> Premiere Pro</div>
+            <div class="marquee-item"><span>✦</span> After Effects</div>
+            <div class="marquee-item"><span>✦</span> DaVinci Resolve</div>
+            <div class="marquee-item"><span>✦</span> Color Grading</div>
+            <div class="marquee-item"><span>✦</span> Motion Graphics</div>
+            <div class="marquee-item"><span>✦</span> Sound Design</div>
+            <div class="marquee-item"><span>✦</span> VFX Compositing</div>
+            <div class="marquee-item"><span>✦</span> Premiere Pro</div>
+            <div class="marquee-item"><span>✦</span> After Effects</div>
+            <div class="marquee-item"><span>✦</span> DaVinci Resolve</div>
+            <div class="marquee-item"><span>✦</span> Color Grading</div>
+            <div class="marquee-item"><span>✦</span> Motion Graphics</div>
+            <
